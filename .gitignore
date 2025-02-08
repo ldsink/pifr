@@ -1,3 +1,6 @@
-.venv
-.pdm-python
 __pycache__
+.pdm-build
+.venv
+dist
+
+.pdm-python

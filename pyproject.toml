@@ -1,3 +1,7 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
 [project]
 name = "pifr"
 version = "0.0.0"
@@ -10,6 +14,5 @@ requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "MIT"}
 
-
-[tool.pdm]
-distribution = false
+[project.scripts]
+pifr = "pifr.main:main"
