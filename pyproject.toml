@@ -1,0 +1,15 @@
+[project]
+name = "pifr"
+version = "0.0.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "ZHOU Cheng", email = "c.zhou@live.com"},
+]
+dependencies = []
+requires-python = ">=3.10"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
