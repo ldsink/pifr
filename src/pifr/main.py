@@ -1,10 +1,19 @@
 import click
 
-@click.command()
-@click.option('--name', default='World', help='The name to greet.')
-def main(name):
-    """Simple command that greets NAME for a total of COUNT times."""
-    click.echo(f'Hello, {name}!')
+from pifr.commands.host import get_ssh_hosts
 
-if __name__ == '__main__':
-    main()
+
+@click.group()
+def cli():
+    """Pull docker image from remote host."""
+
+
+@cli.command(name="list")
+def list_hosts():
+    """列出主机 list hosts"""
+    for host in get_ssh_hosts():
+        click.echo(host)
+
+
+if __name__ == "__main__":
+    cli()

@@ -14,5 +14,89 @@ requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "MIT"}
 
+[dependency-groups]
+dev = [
+    "ruff==0.9.5",
+]
+
 [project.scripts]
-pifr = "pifr.main:main"
+pifr = "pifr.main:cli"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 150
+lint.select = [
+    "F", # https://beta.ruff.rs/docs/rules/#pyflakes-f
+    "E", "W", # https://beta.ruff.rs/docs/rules/#pycodestyle-e-w
+    "I",  # https://beta.ruff.rs/docs/rules/#isort-i
+    "UP",  # https://beta.ruff.rs/docs/rules/#pyupgrade-up
+    "S",  # https://beta.ruff.rs/docs/rules/#flake8-bandit-s
+    "B",  # https://beta.ruff.rs/docs/rules/#flake8-bugbear-b
+    "A",  # https://beta.ruff.rs/docs/rules/#flake8-builtins-a
+    "C4",  # https://beta.ruff.rs/docs/rules/#flake8-comprehensions-c4
+    "ICN",  # https://beta.ruff.rs/docs/rules/#flake8-import-conventions-icn
+    "G",  # https://beta.ruff.rs/docs/rules/#flake8-logging-format-g
+    "PIE",  # https://beta.ruff.rs/docs/rules/#flake8-pie-pie
+    "T20",  # https://beta.ruff.rs/docs/rules/#flake8-print-t20
+    "RET",  # https://beta.ruff.rs/docs/rules/#flake8-return-ret
+    "SIM",  # https://beta.ruff.rs/docs/rules/#flake8-simplify-sim
+    "TID",  # https://beta.ruff.rs/docs/rules/#flake8-tidy-imports-tid
+    "PTH",  # https://beta.ruff.rs/docs/rules/#flake8-use-pathlib-pth
+    "PD",  # https://beta.ruff.rs/docs/rules/#pandas-vet-pd
+    "NPY",  # https://beta.ruff.rs/docs/rules/#numpy-specific-rules-npy
+    "RUF100",  # https://beta.ruff.rs/docs/configuration/#automatic-noqa-management
+]
+lint.ignore = [
+    "A003", # Class attribute ... is shadowing a python builtin (list 接口，命令里的 help 属性，serializers 里的 id 都会被判断为错误)
+    "B005", # use strip with multi-char (bugbear 会误判中文)
+    "B904", # raise ... from ... (一般我们不这么写)
+    "B905", # zip without an explicit strict (默认就是 strict=False)
+    "E501", # line length violations (black 有时候会超限制)
+    "RET504", # variable assignment before `return` （该规则会阻止多分支对单变量赋值，最终返回的写法）
+    "RUF100", # [*] Unused blanket `noqa` directive
+    "S105", # possible hardcoded password (项目内存在不少密码)
+    "S106", # possible hardcoded password (项目内存在不少密码)
+    "S311", # pseudo-random generators (random 就够用了)
+    "S608", # hardcoded sql (我们大量写了 SQL 语句)
+    "SIM102", # don't use nested if (有时为了对齐，会使用双层 if 判断)
+    "SIM108", # use xx if xx else xx instead of `if`-`else`-block (有时会强制嵌套使用 xxx = ... if ... else...)
+    "S307",  # 允许变量命是 df 等常见缩写
+]
+include = [
+    "*.pyi",
+    "*.py",
+]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+    ".idea",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = [
+    "F401", # unused imports
+]
