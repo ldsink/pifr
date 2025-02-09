@@ -1,6 +1,6 @@
 import click
 
-from pifr.commands.host import get_ssh_hosts
+from pifr.commands.host import get_ssh_host_info
 
 
 @click.group()
@@ -11,7 +11,7 @@ def cli():
 @cli.command(name="list")
 def list_hosts():
     """列出主机 list hosts"""
-    for host in get_ssh_hosts():
+    for host in get_ssh_host_info():
         click.echo(host)
 
 
