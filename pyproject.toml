@@ -9,7 +9,7 @@ description = "Default template for PDM package"
 authors = [
     {name = "ZHOU Cheng", email = "c.zhou@live.com"},
 ]
-dependencies = ["click==8.1.8"]
+dependencies = ["click==8.1.8", "rich==13.9.4"]
 requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "MIT"}

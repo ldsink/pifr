@@ -38,4 +38,6 @@ def get_ssh_host_info() -> list[HostInfo]:
                     host.port = int(_extract_value(line))
                 elif host and line.startswith("User "):
                     host.user = _extract_value(line)
+        if host:
+            hosts.append(host)
     return hosts
