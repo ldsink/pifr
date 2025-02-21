@@ -10,4 +10,4 @@ debug: fmt
 	pipx uninstall pifr
 	pipx install --force dist/pifr-0.0.0-py3-none-any.whl
 	pifr --help
-	pifr list
+	pifr pull ldsink hello-world --verbose

@@ -56,11 +56,14 @@ lint.ignore = [
     "RUF100", # [*] Unused blanket `noqa` directive
     "S105", # possible hardcoded password (项目内存在不少密码)
     "S106", # possible hardcoded password (项目内存在不少密码)
+    "S108", # Probable insecure usage of temporary file or directory: "/tmp/"
     "S311", # pseudo-random generators (random 就够用了)
-    "S608", # hardcoded sql (我们大量写了 SQL 语句)
     "SIM102", # don't use nested if (有时为了对齐，会使用双层 if 判断)
     "SIM108", # use xx if xx else xx instead of `if`-`else`-block (有时会强制嵌套使用 xxx = ... if ... else...)
-    "S307",  # 允许变量命是 df 等常见缩写
+    "S307", # 允许变量命是 df 等常见缩写
+    "S603", # `subprocess` call: check for execution of untrusted input
+    "S607", # Starting a process with a partial executable path
+    "S608", # hardcoded sql
 ]
 include = [
     "*.pyi",
