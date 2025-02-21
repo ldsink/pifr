@@ -4,8 +4,8 @@ build-backend = "pdm.backend"
 
 [project]
 name = "pifr"
-version = "0.0.0"
-description = "Default template for PDM package"
+version = "0.1.0"
+description = "Pull docker image from remote host"
 authors = [
     {name = "ZHOU Cheng", email = "c.zhou@live.com"},
 ]
@@ -13,6 +13,19 @@ dependencies = ["click==8.1.8", "rich==13.9.4"]
 requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "MIT"}
+keywords = ["ssh", "docker", "image"]
+classifiers = [
+    "Topic :: Utilities",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+[project.urls]
+Homepage = "https://github.com/ldsink/pifr"
+Repository = "https://github.com/ldsink/pifr"
 
 [dependency-groups]
 dev = [
@@ -47,20 +60,20 @@ lint.select = [
     "RUF100",  # https://beta.ruff.rs/docs/configuration/#automatic-noqa-management
 ]
 lint.ignore = [
-    "A003", # Class attribute ... is shadowing a python builtin (list 接口，命令里的 help 属性，serializers 里的 id 都会被判断为错误)
-    "B005", # use strip with multi-char (bugbear 会误判中文)
-    "B904", # raise ... from ... (一般我们不这么写)
-    "B905", # zip without an explicit strict (默认就是 strict=False)
-    "E501", # line length violations (black 有时候会超限制)
-    "RET504", # variable assignment before `return` （该规则会阻止多分支对单变量赋值，最终返回的写法）
+    "A003", # Class attribute ... is shadowing a python builtin
+    "B005", # use strip with multi-char
+    "B904", # raise ... from ...
+    "B905", # zip without an explicit strict
+    "E501", # line length violations
+    "RET504", # variable assignment before `return`
     "RUF100", # [*] Unused blanket `noqa` directive
-    "S105", # possible hardcoded password (项目内存在不少密码)
-    "S106", # possible hardcoded password (项目内存在不少密码)
+    "S105", # possible hardcoded password
+    "S106", # possible hardcoded password
     "S108", # Probable insecure usage of temporary file or directory: "/tmp/"
-    "S311", # pseudo-random generators (random 就够用了)
-    "SIM102", # don't use nested if (有时为了对齐，会使用双层 if 判断)
-    "SIM108", # use xx if xx else xx instead of `if`-`else`-block (有时会强制嵌套使用 xxx = ... if ... else...)
-    "S307", # 允许变量命是 df 等常见缩写
+    "S311", # pseudo-random generators
+    "SIM102", # don't use nested if
+    "SIM108", # use xx if xx else xx instead of `if`-`else`-block
+    "S307", # use of mark_safe
     "S603", # `subprocess` call: check for execution of untrusted input
     "S607", # Starting a process with a partial executable path
     "S608", # hardcoded sql
