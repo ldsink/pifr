@@ -8,6 +8,5 @@ publish:
 debug: fmt
 	pdm build
 	pipx uninstall pifr
-	pipx install --force dist/pifr-0.0.0-py3-none-any.whl
-	pifr --help
-	pifr pull ldsink hello-world --verbose
+	pipx install --force dist/*.whl
+	pifr pull --verbose ldsink docker.n8n.io/n8nio/n8n:1.79.3
