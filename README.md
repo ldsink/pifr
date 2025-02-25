@@ -14,7 +14,7 @@
     <a href="https://pypi.python.org/pypi/pifr">
         <img src="https://img.shields.io/pypi/pyversions/pifr?style=flat-square" />
     </a>
-    <a href="https://github.com/arcticdata/pifr/blob/master/LICENSE">
+    <a href="https://github.com/ldsink/pifr/blob/master/LICENSE">
         <img src="https://img.shields.io/pypi/l/pifr?style=flat-square" alt="License" />
     </a>
 </p>
@@ -31,7 +31,7 @@ It is recommended to install using [**pipx**][1]. [_How to install pipx?_][2]
 
 Pull an image through a host
 
-> pifr pull <host> <image_name>
+> pifr pull <host_name> <image_name>
 
 > pifr pull remote-host hello-world
 
