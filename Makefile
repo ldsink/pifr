@@ -10,3 +10,6 @@ debug: fmt
 	pipx uninstall pifr
 	pipx install --force dist/*.whl
 	pifr pull --verbose ldsink docker.n8n.io/n8nio/n8n:1.79.3
+
+patch: fmt
+	pdm run bump-my-version bump patch pyproject.toml
