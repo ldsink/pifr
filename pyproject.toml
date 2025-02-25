@@ -29,7 +29,7 @@ Repository = "https://github.com/ldsink/pifr"
 
 [dependency-groups]
 dev = [
-    "ruff==0.9.5",
+    "ruff==0.9.7",
 ]
 
 [project.scripts]
