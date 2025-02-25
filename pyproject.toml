@@ -4,7 +4,7 @@ build-backend = "pdm.backend"
 
 [project]
 name = "pifr"
-version = "0.1.1"
+version = "0.1.2"
 description = "Pull docker image from remote host"
 authors = [
     {name = "ZHOU Cheng", email = "c.zhou@live.com"},
@@ -119,7 +119,7 @@ exclude = [
 ]
 
 [tool.bumpversion]
-current_version = "0.1.1"
+current_version = "0.1.2"
 parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
 serialize = ["{major}.{minor}.{patch}"]
 search = "{current_version}"
