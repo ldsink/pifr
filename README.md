@@ -51,12 +51,18 @@ Usage: pifr [OPTIONS] COMMAND [ARGS]...
   Pull docker image from remote host, or push local image to remote host.
 
 Options:
-  --help  Show this message and exit.
+  --version  Show the version and exit.
+  --help     Show this message and exit.
 
 Commands:
-  list  列出主机 List hosts
-  pull  在主机上拉取镜像，并导入到本地 Pull image at remote host and save it to local
-  push  将本地镜像推送到远端主机 Push local image to remote host
+  list  列出 SSH 配置中的主机 List hosts from ~/.ssh/config.
+  pull  在远端主机拉取镜像，保存并导入到本地 Pull image at remote host and save it to local.
+  push  将本地镜像保存并推送到远端主机 Push local image to remote host.
+
+  Examples:
+    pifr list
+    pifr pull remote-host alpine:latest
+    pifr push alpine:latest remote-host
 ```
 
 [1]: https://docs.astral.sh/uv/
