@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "pifr"
 version = "0.1.3"
-description = "Pull docker image from remote host"
+description = "Pull or push docker images through an SSH host"
 authors = [
     {name = "ZHOU Cheng", email = "c.zhou@live.com"},
 ]
