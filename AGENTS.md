@@ -13,7 +13,7 @@ Use Python 3.10+ and uv for the development environment.
 - `make fmt` formats `src/` and applies safe Ruff fixes.
 - `uvx ruff check src` verifies linting without changing files.
 - `uv build` creates wheel and source distributions in `dist/`.
-- `make debug` formats, builds, reinstalls the wheel with pipx, then runs a manual pull scenario. It requires SSH and Docker access, so do not run it casually.
+- `make debug <args>` formats code then runs `uv run pifr <args>` from the working tree, e.g. `make debug pull host image` or `make debug -- --help` for flags.
 
 ## Coding Style & Naming Conventions
 
