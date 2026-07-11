@@ -19,7 +19,7 @@
     </a>
 </p>
 
-Pull docker image from remote host
+Pull docker image from remote host, or push local image to remote host
 
 ## Install
 
@@ -35,12 +35,20 @@ Pull an image through a host
 
 > pifr pull remote-host hello-world
 
+Push a local image to a remote host
+
+> pifr push <image_name> <host_name>
+
+> pifr push hello-world remote-host
+
+This is useful when the local machine acts as an intermediary to transfer images between two hosts that cannot reach each other directly.
+
 To see all of pifr's documentation, run `pifr --help`
 
 ```text
 Usage: pifr [OPTIONS] COMMAND [ARGS]...
 
-  Pull docker image from remote host.
+  Pull docker image from remote host, or push local image to remote host.
 
 Options:
   --help  Show this message and exit.
@@ -48,6 +56,7 @@ Options:
 Commands:
   list  列出主机 List hosts
   pull  在主机上拉取镜像，并导入到本地 Pull image at remote host and save it to local
+  push  将本地镜像推送到远端主机 Push local image to remote host
 ```
 
 [1]: https://github.com/pypa/pipx

@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-`pifr` is a small Python command-line tool for pulling Docker images through an SSH host. Package code lives in `src/pifr/`. `main.py` defines the Click command group and the `list` and `pull` commands; keep command implementations in `src/pifr/commands/`. `host.py` reads and displays SSH configuration, while `ssh.py` runs the remote Docker workflow. Project metadata, dependencies, Ruff settings, and the CLI entry point are in `pyproject.toml`; `Makefile` contains common release and local-debug tasks. There is currently no committed test directory.
+`pifr` is a small Python command-line tool for pulling Docker images through an SSH host. Package code lives in `src/pifr/`. `main.py` defines the Click command group and the `list`, `pull`, and `push` commands; keep command implementations in `src/pifr/commands/`. `host.py` reads and displays SSH configuration, while `ssh.py` runs the remote Docker workflow. Project metadata, dependencies, Ruff settings, and the CLI entry point are in `pyproject.toml`; `Makefile` contains common release and local-debug tasks. There is currently no committed test directory.
 
 ## Build, Test, and Development Commands
 
