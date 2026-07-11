@@ -14,12 +14,8 @@ class HostInfo:
 
 
 def get_ssh_host_info() -> list[HostInfo]:
-    # 构建 .ssh/config 文件的完整路径
     ssh_config_path = Path.home() / ".ssh" / "config"
     host, hosts = None, []
-
-    def _extract_value(s: str) -> str:
-        return s.strip().split(" ", 1)[1].strip()
 
     if ssh_config_path.exists():
         with ssh_config_path.open("r") as file:
@@ -27,20 +23,23 @@ def get_ssh_host_info() -> list[HostInfo]:
                 line = line.strip()
                 if not line or line.startswith("#"):
                     continue
-                # init a host data
-                if line.startswith("Host "):
+                parts = line.split(None, 1)
+                if len(parts) < 2:
+                    continue
+                key, value = parts[0], parts[1].strip()
+                if key == "Host":
                     if host:
                         hosts.append(host)
-                    if name := _extract_value(line):
-                        host = HostInfo(name)
-                    else:  # ifnore error config
+                    if value:
+                        host = HostInfo(value)
+                    else:
                         host = None
-                if host and line.startswith("HostName "):
-                    host.hostname = _extract_value(line)
-                elif host and line.startswith("Port "):
-                    host.port = int(_extract_value(line))
-                elif host and line.startswith("User "):
-                    host.user = _extract_value(line)
+                elif host and key == "HostName":
+                    host.hostname = value
+                elif host and key == "Port":
+                    host.port = int(value)
+                elif host and key == "User":
+                    host.user = value
         if host:
             hosts.append(host)
     return hosts
