@@ -23,9 +23,9 @@ Pull docker image from remote host, or push local image to remote host
 
 ## Install
 
-It is recommended to install using [**pipx**][1]. [_How to install pipx?_][2]
+It is recommended to run directly with [**uvx**][1]. [_How to install uv?_][2]
 
-> pipx install pifr
+> uvx pifr
 
 ## Usage
 
@@ -59,5 +59,5 @@ Commands:
   push  将本地镜像推送到远端主机 Push local image to remote host
 ```
 
-[1]: https://github.com/pypa/pipx
-[2]: https://github.com/pypa/pipx?tab=readme-ov-file#install-pipx
+[1]: https://docs.astral.sh/uv/
+[2]: https://docs.astral.sh/uv/getting-started/installation/
