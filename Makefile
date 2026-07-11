@@ -1,6 +1,6 @@
 fmt:
-	uv run ruff format src
-	uv run ruff check --fix src
+	uvx ruff format src
+	uvx ruff check --fix src
 
 publish:
 	uv build

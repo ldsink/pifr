@@ -11,7 +11,7 @@ Use Python 3.10+ and uv for the development environment.
 - `uv sync --group dev` installs the locked runtime and development dependencies.
 - `uv run pifr --help` runs the CLI from the working tree; use `uv run pifr list` to inspect SSH hosts.
 - `make fmt` formats `src/` and applies safe Ruff fixes.
-- `uv run ruff check src` verifies linting without changing files.
+- `uvx ruff check src` verifies linting without changing files.
 - `uv build` creates wheel and source distributions in `dist/`.
 - `make debug` formats, builds, reinstalls the wheel with pipx, then runs a manual pull scenario. It requires SSH and Docker access, so do not run it casually.
 

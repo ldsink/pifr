@@ -30,7 +30,6 @@ Repository = "https://github.com/ldsink/pifr"
 
 [dependency-groups]
 dev = [
-    "ruff==0.9.7",
     "bump-my-version==0.32.2",
 ]
 
