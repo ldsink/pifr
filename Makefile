@@ -1,6 +1,7 @@
 fmt:
 	uvx ruff format src
 	uvx ruff check --fix src
+	@npx prettier --write --print-width 150 "*.{md,yml,yaml}" "**/*.{md,yml,yaml}" --no-error-on-unmatched-pattern
 
 publish:
 	uv build
