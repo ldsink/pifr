@@ -15,7 +15,7 @@ def ssh_pull_image(host: str, image: str, verbose: bool = False):
     image_path = f"/tmp/{uuid.uuid4().hex[:7]}.tar.gz"
 
     click.echo(click.style("Saving image ") + click.style(image, fg="cyan") + click.style(f" to {image_path}..."))
-    _ssh_run(["ssh", host, "docker", "save", image, "|", "gzip", ">", image_path], "Saving image done", "Saving image failed", verbose)
+    _ssh_run(["ssh", host, "set", "-o", "pipefail", "&&", "docker", "save", image, "|", "gzip", ">", image_path], "Saving image done", "Saving image failed", verbose)
 
     click.echo(click.style("Copying ") + click.style(image_path, fg="cyan") + click.style(f" from {host} to local..."))
     _ssh_run(["scp", f"{host}:{image_path}", image_path], "Copying image done", "Copying image failed", verbose)
