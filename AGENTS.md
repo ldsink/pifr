@@ -26,3 +26,6 @@ No automated test framework is configured yet. For behavior changes, add focused
 ## Commit & Pull Request Guidelines
 
 Recent history follows Conventional Commit-style prefixes: `feat:`, `fix:`, `docs:`, `chore:`, and `ci:`. Write imperative, scoped summaries, for example `fix: handle empty SSH host entries`. Keep commits focused. Pull requests should explain the user-visible change, note validation performed, link any relevant issue, and include terminal output or screenshots when CLI output changes. Do not commit generated `dist/`, virtual-environment, or cache artifacts.
+
+- Branch names must not contain `/`; use `-` to separate words (for example `feat-add-ssh-timeout`, not `feat/add-ssh-timeout`).
+- Each commit or pull request should implement exactly one feature or fix exactly one bug; do not modify unrelated code unless it is necessary to complete the change.
