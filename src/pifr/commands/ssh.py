@@ -62,7 +62,12 @@ def ssh_push_image(image: str, host: str, verbose: bool = False):
 
 
 def _ssh_run(cmd: list[str], success: str, fail: str, verbose: bool = False):
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True)
+    except FileNotFoundError:
+        click.echo(click.style(fail, fg="red"))
+        click.echo(click.style(f"Command not found: {cmd[0]}", fg="red"))
+        sys.exit(1)
     if result.returncode != 0:
         click.echo(click.style(fail, fg="red"))
         click.echo(click.style(result.stderr, fg="red"))
