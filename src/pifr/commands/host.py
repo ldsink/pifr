@@ -8,9 +8,9 @@ from rich.table import Table
 @dataclass
 class HostInfo:
     name: str
-    hostname: str = None
-    user: str = None
-    port: int = None
+    hostname: str | None = None
+    user: str | None = None
+    port: int | None = None
 
 
 def get_ssh_host_info() -> list[HostInfo]:
