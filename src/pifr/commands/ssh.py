@@ -1,4 +1,5 @@
 import subprocess
+import sys
 import uuid
 
 import click
@@ -65,7 +66,7 @@ def _ssh_run(cmd: list[str], success: str, fail: str, verbose: bool = False):
     if result.returncode != 0:
         click.echo(click.style(fail, fg="red"))
         click.echo(click.style(result.stderr, fg="red"))
-        exit(result.returncode)
+        sys.exit(result.returncode)
     if verbose and result.stdout:
         click.echo(click.style(result.stdout))
     click.echo(click.style(success, fg="green") + click.style(" ✅\n"))
