@@ -22,7 +22,7 @@ Use Python 3.10+ and uv for the development environment.
 
 ## Coding Style & Naming Conventions
 
-Follow the existing Python style: four-space indentation, type annotations on public functions, `snake_case` for functions and variables, `PascalCase` for classes such as `HostInfo`, and concise Click command functions. Prefer `pathlib.Path` for filesystem work and keep terminal output in Click/Rich helpers. Ruff targets Python 3.13, uses a 150-character line limit, and enforces import ordering and security-oriented rules. Run `make fmt` before committing.
+Follow the existing Python style: four-space indentation, type annotations on public functions, `snake_case` for functions and variables, `PascalCase` for classes such as `HostInfo`, and concise Click command functions. Prefer `pathlib.Path` for filesystem work and keep terminal output in Click/Rich helpers. Ruff targets Python 3.14, uses a 150-character line limit, and enforces import ordering and security-oriented rules. Run `make fmt` before committing.
 
 ## Testing Guidelines
 
