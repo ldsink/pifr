@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-`pifr` is a small Python command-line tool for pulling Docker images through an SSH host. Package code lives in `src/pifr/`. `main.py` defines the Click command group and the `list`, `pull`, and `push` commands; keep command implementations in `src/pifr/commands/`. `host.py` reads and displays SSH configuration, while `ssh.py` runs the remote Docker workflow. Project metadata, dependencies, Ruff settings, and the CLI entry point are in `pyproject.toml`; `Makefile` contains common release and local-debug tasks. There is currently no committed test directory.
+`pifr` is a small Python command-line tool for pulling Docker images through an SSH host. Package code lives in `src/pifr/`. `main.py` defines the Click command group and the `list`, `pull`, and `push` commands; keep command implementations in `src/pifr/commands/`. `host.py` reads and displays SSH configuration, while `ssh.py` runs the remote Docker workflow. Project metadata, dependencies, Ruff settings, and the CLI entry point are in `pyproject.toml`; `Makefile` contains common release and local-debug tasks. Tests live in `tests/`.
 
 ## Documentation Guidelines
 
@@ -14,7 +14,8 @@ Use Python 3.10+ and uv for the development environment.
 
 - `uv sync --group dev` installs the locked runtime and development dependencies.
 - `uv run pifr --help` runs the CLI from the working tree; use `uv run pifr list` to inspect SSH hosts.
-- `make fmt` formats `src/` and applies safe Ruff fixes.
+- `make fmt` formats `src/` and `tests/` and applies safe Ruff fixes.
+- `make test` formats code and runs the pytest suite.
 - `uvx ruff check src` verifies linting without changing files.
 - `uv build` creates wheel and source distributions in `dist/`.
 - `make debug <args>` formats code then runs `uv run pifr <args>` from the working tree, e.g. `make debug pull host image` or `make debug -- --help` for flags.
@@ -25,7 +26,7 @@ Follow the existing Python style: four-space indentation, type annotations on pu
 
 ## Testing Guidelines
 
-No automated test framework is configured yet. For behavior changes, add focused tests under `tests/` using `test_<feature>.py` and avoid tests that require a real SSH host or Docker daemon; mock subprocess and filesystem boundaries instead. Until tests exist, run Ruff and exercise affected CLI paths with `uv run pifr --help` or a safe `list` invocation.
+Use pytest for focused tests under `tests/` named `test_<feature>.py`. Avoid tests that require a real SSH host or Docker daemon; mock subprocess and filesystem boundaries instead. Run `make test` and exercise affected CLI paths with `uv run pifr --help` or a safe `list` invocation.
 
 ## Commit & Pull Request Guidelines
 
