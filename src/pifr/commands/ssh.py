@@ -1,23 +1,77 @@
+import re
+import shlex
 import subprocess
 import sys
 import uuid
 
 import click
 
+_NAME_COMPONENT = r"[a-z0-9]+(?:(?:[._]|__|-+)[a-z0-9]+)*"
+_DOMAIN_COMPONENT = r"[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?"
+_HOST = rf"(?:{_DOMAIN_COMPONENT}(?:\.{_DOMAIN_COMPONENT})*|\[[A-Fa-f0-9:]+\])"
+_IMAGE_NAME = re.compile(rf"(?:{_HOST}(?::[0-9]+)?/)?{_NAME_COMPONENT}(?:/{_NAME_COMPONENT})*\Z")
+_TAG = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}\Z")
+_DIGEST = re.compile(r"[A-Za-z][A-Za-z0-9]*(?:[-_+.][A-Za-z][A-Za-z0-9]*)*:[A-Fa-f0-9]{32,}\Z")
+_ALLOWED_CHARACTERS = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._:/@+-[]")
+
+
+def validate_image_name(image: str) -> str:
+    """Validate a Docker image reference before using it in a remote command."""
+    if not image:
+        raise click.BadParameter("Image name cannot be empty; use a name such as alpine:latest.", param_hint="IMAGE")
+
+    for position, character in enumerate(image, start=1):
+        if character not in _ALLOWED_CHARACTERS:
+            raise click.BadParameter(
+                f"Invalid character {character!r} at position {position}; use a Docker image name without spaces or shell operators.",
+                param_hint="IMAGE",
+            )
+
+    name_and_tag, separator, digest = image.partition("@")
+    if separator and not _DIGEST.fullmatch(digest):
+        raise click.BadParameter(
+            "Invalid digest; use an algorithm and at least 32 hexadecimal digits, for example sha256:<64 hex digits>.", param_hint="IMAGE"
+        )
+
+    name = name_and_tag
+    if ":" in name_and_tag.rsplit("/", 1)[-1]:
+        name, tag = name_and_tag.rsplit(":", 1)
+        if not _TAG.fullmatch(tag):
+            raise click.BadParameter(
+                "Invalid tag; start with a letter, digit, or underscore and use at most 128 letters, digits, underscores, dots, or hyphens.",
+                param_hint="IMAGE",
+            )
+
+    first_component, _, remainder = name.partition("/")
+    has_registry = bool(remainder) and (first_component == "localhost" or "." in first_component or ":" in first_component)
+    repository = remainder if has_registry else name
+    if any(character.isupper() for character in repository):
+        raise click.BadParameter(
+            "Repository path must be lowercase; uppercase letters are allowed only in the registry host or tag.", param_hint="IMAGE"
+        )
+
+    if not _IMAGE_NAME.fullmatch(name):
+        raise click.BadParameter(
+            "Invalid repository name; use lowercase path components separated by '/', optionally preceded by a registry host and port.",
+            param_hint="IMAGE",
+        )
+    return image
+
 
 def ssh_pull_image(host: str, image: str, verbose: bool = False):
     """Pull docker image at remote host"""
+    image = validate_image_name(image)
 
     click.echo(
         click.style("Pulling image ") + click.style(image, fg="cyan") + click.style(" at ") + click.style(host, fg="cyan") + click.style("...")
     )
-    _ssh_run(["ssh", host, "docker", "pull", image], "Pulling image done", "Pulling image failed", verbose)
+    _ssh_run(["ssh", host, "docker", "pull", shlex.quote(image)], "Pulling image done", "Pulling image failed", verbose)
 
     image_path = f"/tmp/{uuid.uuid4().hex[:7]}.tar.gz"
 
     click.echo(click.style("Saving image ") + click.style(image, fg="cyan") + click.style(f" to {image_path}..."))
     _ssh_run(
-        ["ssh", host, "set", "-o", "pipefail", "&&", "docker", "save", image, "|", "gzip", ">", image_path],
+        ["ssh", host, "set", "-o", "pipefail", "&&", "docker", "save", shlex.quote(image), "|", "gzip", ">", image_path],
         "Saving image done",
         "Saving image failed",
         verbose,
@@ -38,6 +92,7 @@ def ssh_pull_image(host: str, image: str, verbose: bool = False):
 
 def ssh_push_image(image: str, host: str, verbose: bool = False):
     """Push docker image to remote host"""
+    image = validate_image_name(image)
 
     tar_path = f"/tmp/{uuid.uuid4().hex[:7]}.tar"
 

@@ -47,6 +47,8 @@ Push a local image to a remote host
 
 > pifr push hello-world remote-host
 
+Image names may include a registry host and port, a tag, or a digest. Invalid names are rejected before any transfer starts.
+
 This is useful when the local machine acts as an intermediary to transfer images between two hosts that cannot reach each other directly.
 
 To see all available commands, run `pifr --help`.
