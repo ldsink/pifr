@@ -15,6 +15,18 @@ _IMAGE_NAME = re.compile(rf"(?:{_HOST}(?::[0-9]+)?/)?{_NAME_COMPONENT}(?:/{_NAME
 _TAG = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}\Z")
 _DIGEST = re.compile(r"[A-Za-z][A-Za-z0-9]*(?:[-_+.][A-Za-z][A-Za-z0-9]*)*:[A-Fa-f0-9]{32,}\Z")
 _ALLOWED_CHARACTERS = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._:/@+-[]")
+_SSH_HOST = re.compile(r"(?:[A-Za-z0-9_][A-Za-z0-9_.-]*@)?[A-Za-z0-9_][A-Za-z0-9_.-]*\Z")
+
+
+def validate_host(host: str) -> str:
+    """Accept SSH aliases and user@host destinations without option or path syntax."""
+    if not _SSH_HOST.fullmatch(host):
+        raise click.BadParameter(
+            "Use an SSH host alias or user@host containing letters, digits, dots, underscores, or hyphens; "
+            "each part must start with a letter, digit, or underscore.",
+            param_hint="HOST",
+        )
+    return host
 
 
 def validate_image_name(image: str) -> str:
@@ -62,6 +74,7 @@ def validate_image_name(image: str) -> str:
 
 def ssh_pull_image(host: str, image: str, verbose: bool = False):
     """Pull docker image at remote host"""
+    host = validate_host(host)
     image = validate_image_name(image)
 
     click.echo(
@@ -94,6 +107,7 @@ def ssh_pull_image(host: str, image: str, verbose: bool = False):
 
 def ssh_push_image(image: str, host: str, verbose: bool = False):
     """Push docker image to remote host"""
+    host = validate_host(host)
     image = validate_image_name(image)
 
     with tempfile.TemporaryDirectory(prefix="pifr-") as local_dir:
