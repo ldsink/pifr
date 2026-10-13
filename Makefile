@@ -16,6 +16,7 @@ debug: fmt
 	uv run pifr $(filter-out $@,$(MAKECMDGOALS))
 
 patch: fmt
+	# The version bump refreshes and stages uv.lock before its commit and tag.
 	uv run bump-my-version bump patch pyproject.toml
 
 %:
