@@ -14,7 +14,7 @@
     <a href="https://pypi.python.org/pypi/pifr">
         <img src="https://img.shields.io/pypi/pyversions/pifr?style=flat-square" />
     </a>
-    <a href="https://github.com/ldsink/pifr/blob/master/LICENSE">
+    <a href="https://github.com/ldsink/pifr/blob/main/LICENSE">
         <img src="https://img.shields.io/pypi/l/pifr?style=flat-square" alt="许可证" />
     </a>
 </p>
