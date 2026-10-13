@@ -51,7 +51,7 @@ class ImageValidationTests(unittest.TestCase):
             run.assert_not_called()
 
     def test_remote_image_is_shell_quoted(self):
-        def copy_remote_archive(command, *_args):
+        def copy_remote_archive(command, *_args, **_kwargs):
             if command[0] == "scp":
                 Path(command[-1]).write_bytes(b"archive")
 

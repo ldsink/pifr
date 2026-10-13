@@ -12,7 +12,7 @@ class TempPermissionsTests(unittest.TestCase):
     def test_pull_uses_private_directories_and_files(self):
         inspected = {}
 
-        def run(command, *_args):
+        def run(command, *_args, **_kwargs):
             if command[0] == "scp":
                 Path(command[-1]).write_bytes(b"archive")
             elif command[:3] == ["docker", "load", "-i"]:
@@ -36,7 +36,7 @@ class TempPermissionsTests(unittest.TestCase):
     def test_push_restricts_local_and_remote_archives(self):
         inspected = {}
 
-        def run(command, *_args):
+        def run(command, *_args, **_kwargs):
             if command[:3] == ["docker", "save", "-o"]:
                 archive = Path(command[3])
                 archive.write_bytes(b"archive")
@@ -67,7 +67,7 @@ class TempPermissionsTests(unittest.TestCase):
     def test_failure_removes_private_directories(self):
         local_directory = None
 
-        def run(command, *_args):
+        def run(command, *_args, **_kwargs):
             nonlocal local_directory
             if command[0] == "scp":
                 local_directory = Path(command[-1]).parent

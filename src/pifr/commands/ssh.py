@@ -138,18 +138,33 @@ def _create_remote_temp_dir(host: str, verbose: bool) -> str:
 
 def _remove_remote_temp_dir(host: str, remote_dir: str, verbose: bool):
     _ssh_run(
-        ["ssh", host, "rm", "-r", "--", remote_dir], "Removing remote temporary directory done", "Removing remote temporary directory failed", verbose
+        ["ssh", host, "rm", "-r", "--", remote_dir],
+        "Removing remote temporary directory done",
+        "Removing remote temporary directory failed",
+        verbose,
+        warn_only=True,
     )
 
 
-def _ssh_run(cmd: list[str], success: str, fail: str, verbose: bool = False):
+def _ssh_run(cmd: list[str], success: str, fail: str, verbose: bool = False, *, warn_only: bool = False):
     try:
         result = subprocess.run(cmd, capture_output=True, text=True)
-    except FileNotFoundError:
+    except OSError as error:
+        detail = f"Command not found: {cmd[0]}" if isinstance(error, FileNotFoundError) else str(error)
+        if warn_only:
+            click.echo(click.style(f"Warning: {fail}: {detail}", fg="yellow"), err=True)
+            return
         click.echo(click.style(fail, fg="red"))
-        click.echo(click.style(f"Command not found: {cmd[0]}", fg="red"))
+        click.echo(click.style(detail, fg="red"))
         sys.exit(1)
     if result.returncode != 0:
+        if warn_only:
+            detail = result.stderr.strip()
+            message = f"Warning: {fail}"
+            if detail:
+                message += f": {detail}"
+            click.echo(click.style(message, fg="yellow"), err=True)
+            return
         click.echo(click.style(fail, fg="red"))
         click.echo(click.style(result.stderr, fg="red"))
         sys.exit(result.returncode)
