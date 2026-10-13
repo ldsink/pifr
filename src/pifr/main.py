@@ -22,7 +22,7 @@ def list_hosts():
 @cli.command(name="pull")
 @click.argument("host", type=str)
 @click.argument("image", type=str)
-@click.option("--verbose", is_flag=True, help="Show command stdout/stderr")
+@click.option("--verbose", is_flag=True, help="Show command stdout on success")
 def pull_image(host: str, image: str, verbose: bool):
     """在远端主机拉取镜像，保存并导入到本地 Pull image at remote host and save it to local.
 
@@ -36,7 +36,7 @@ def pull_image(host: str, image: str, verbose: bool):
 @cli.command(name="push")
 @click.argument("image", type=str)
 @click.argument("host", type=str)
-@click.option("--verbose", is_flag=True, help="Show command stdout/stderr")
+@click.option("--verbose", is_flag=True, help="Show command stdout on success")
 def push_image(image: str, host: str, verbose: bool):
     """将本地镜像保存并推送到远端主机 Push local image to remote host.
 
