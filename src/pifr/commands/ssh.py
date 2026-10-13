@@ -2,7 +2,9 @@ import re
 import shlex
 import subprocess
 import sys
+import tempfile
 import uuid
+from pathlib import Path
 
 import click
 
@@ -67,53 +69,77 @@ def ssh_pull_image(host: str, image: str, verbose: bool = False):
     )
     _ssh_run(["ssh", host, "docker", "pull", shlex.quote(image)], "Pulling image done", "Pulling image failed", verbose)
 
-    image_path = f"/tmp/{uuid.uuid4().hex[:7]}.tar.gz"
+    remote_dir = _create_remote_temp_dir(host, verbose)
+    image_path = f"{remote_dir}/image.tar.gz"
+    try:
+        click.echo(click.style("Saving image ") + click.style(image, fg="cyan") + click.style(f" to {image_path}..."))
+        _ssh_run(
+            ["ssh", host, "umask", "077", "&&", "set", "-o", "pipefail", "&&", "docker", "save", shlex.quote(image), "|", "gzip", ">", image_path],
+            "Saving image done",
+            "Saving image failed",
+            verbose,
+        )
 
-    click.echo(click.style("Saving image ") + click.style(image, fg="cyan") + click.style(f" to {image_path}..."))
-    _ssh_run(
-        ["ssh", host, "set", "-o", "pipefail", "&&", "docker", "save", shlex.quote(image), "|", "gzip", ">", image_path],
-        "Saving image done",
-        "Saving image failed",
-        verbose,
-    )
+        with tempfile.TemporaryDirectory(prefix="pifr-") as local_dir:
+            local_path = Path(local_dir) / "image.tar.gz"
+            click.echo(click.style("Copying ") + click.style(image_path, fg="cyan") + click.style(f" from {host} to local..."))
+            _ssh_run(["scp", f"{host}:{image_path}", str(local_path)], "Copying image done", "Copying image failed", verbose)
+            local_path.chmod(0o600)
 
-    click.echo(click.style("Copying ") + click.style(image_path, fg="cyan") + click.style(f" from {host} to local..."))
-    _ssh_run(["scp", f"{host}:{image_path}", image_path], "Copying image done", "Copying image failed", verbose)
-
-    click.echo(click.style("Removing ") + click.style(image_path, fg="cyan") + click.style(" at remote host..."))
-    _ssh_run(["ssh", host, "rm", image_path], f"Removing {image_path} success", f"Removing {image_path} error", verbose)
-
-    click.echo(click.style("Loading ") + click.style(image_path, fg="cyan") + click.style(" to local docker..."))
-    _ssh_run(["docker", "load", "-i", image_path], "Loading image done", "Loading image failed", verbose)
-
-    click.echo(click.style("Removing ") + click.style(image_path, fg="cyan") + click.style(" at local..."))
-    _ssh_run(["rm", image_path], f"Removing {image_path} success", f"Removing {image_path} error", verbose)
+            click.echo(click.style("Loading ") + click.style(str(local_path), fg="cyan") + click.style(" to local docker..."))
+            _ssh_run(["docker", "load", "-i", str(local_path)], "Loading image done", "Loading image failed", verbose)
+    finally:
+        _remove_remote_temp_dir(host, remote_dir, verbose)
 
 
 def ssh_push_image(image: str, host: str, verbose: bool = False):
     """Push docker image to remote host"""
     image = validate_image_name(image)
 
-    tar_path = f"/tmp/{uuid.uuid4().hex[:7]}.tar"
+    with tempfile.TemporaryDirectory(prefix="pifr-") as local_dir:
+        tar_path = Path(local_dir) / "image.tar"
+        click.echo(click.style("Saving image ") + click.style(image, fg="cyan") + click.style(f" to {tar_path}..."))
+        _ssh_run(["docker", "save", "-o", str(tar_path), image], "Saving image done", "Saving image failed", verbose)
+        tar_path.chmod(0o600)
 
-    click.echo(click.style("Saving image ") + click.style(image, fg="cyan") + click.style(f" to {tar_path}..."))
-    _ssh_run(["docker", "save", "-o", tar_path, image], "Saving image done", "Saving image failed", verbose)
+        gz_path = tar_path.with_suffix(".tar.gz")
+        click.echo(click.style("Compressing ") + click.style(str(tar_path), fg="cyan") + click.style(f" to {gz_path}..."))
+        _ssh_run(["gzip", "-f", str(tar_path)], "Compressing done", "Compressing failed", verbose)
+        gz_path.chmod(0o600)
 
-    gz_path = f"{tar_path}.gz"
-    click.echo(click.style("Compressing ") + click.style(tar_path, fg="cyan") + click.style(f" to {gz_path}..."))
-    _ssh_run(["gzip", "-f", tar_path], "Compressing done", "Compressing failed", verbose)
+        remote_dir = _create_remote_temp_dir(host, verbose)
+        remote_path = f"{remote_dir}/image.tar.gz"
+        try:
+            click.echo(click.style("Copying ") + click.style(str(gz_path), fg="cyan") + click.style(f" to {host}..."))
+            _ssh_run(["scp", str(gz_path), f"{host}:{remote_path}"], "Copying image done", "Copying image failed", verbose)
+            _ssh_run(
+                ["ssh", host, "chmod", "600", "--", remote_path],
+                "Restricting remote image permissions done",
+                "Restricting remote image permissions failed",
+                verbose,
+            )
 
-    click.echo(click.style("Copying ") + click.style(gz_path, fg="cyan") + click.style(f" to {host}..."))
-    _ssh_run(["scp", gz_path, f"{host}:{gz_path}"], "Copying image done", "Copying image failed", verbose)
+            click.echo(click.style("Loading image ") + click.style(image, fg="cyan") + click.style(f" at {host}..."))
+            _ssh_run(["ssh", host, "docker", "load", "-i", remote_path], "Loading image done", "Loading image failed", verbose)
+        finally:
+            _remove_remote_temp_dir(host, remote_dir, verbose)
 
-    click.echo(click.style("Loading image ") + click.style(image, fg="cyan") + click.style(f" at {host}..."))
-    _ssh_run(["ssh", host, "docker", "load", "-i", gz_path], "Loading image done", "Loading image failed", verbose)
 
-    click.echo(click.style("Removing ") + click.style(gz_path, fg="cyan") + click.style(" at local..."))
-    _ssh_run(["rm", gz_path], f"Removing {gz_path} success", f"Removing {gz_path} error", verbose)
+def _create_remote_temp_dir(host: str, verbose: bool) -> str:
+    remote_dir = f"/tmp/pifr-{uuid.uuid4().hex}"
+    _ssh_run(
+        ["ssh", host, "mkdir", "-m", "700", "--", remote_dir],
+        "Creating remote temporary directory done",
+        "Creating remote temporary directory failed",
+        verbose,
+    )
+    return remote_dir
 
-    click.echo(click.style("Removing ") + click.style(gz_path, fg="cyan") + click.style(f" at {host}..."))
-    _ssh_run(["ssh", host, "rm", gz_path], f"Removing {gz_path} success", f"Removing {gz_path} error", verbose)
+
+def _remove_remote_temp_dir(host: str, remote_dir: str, verbose: bool):
+    _ssh_run(
+        ["ssh", host, "rm", "-r", "--", remote_dir], "Removing remote temporary directory done", "Removing remote temporary directory failed", verbose
+    )
 
 
 def _ssh_run(cmd: list[str], success: str, fail: str, verbose: bool = False):

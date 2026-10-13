@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 import click
@@ -50,11 +51,16 @@ class ImageValidationTests(unittest.TestCase):
             run.assert_not_called()
 
     def test_remote_image_is_shell_quoted(self):
-        with patch("pifr.commands.ssh._ssh_run") as run:
+        def copy_remote_archive(command, *_args):
+            if command[0] == "scp":
+                Path(command[-1]).write_bytes(b"archive")
+
+        with patch("pifr.commands.ssh._ssh_run", side_effect=copy_remote_archive) as run:
             result = CliRunner().invoke(cli, ("pull", "remote", "[::1]:5000/team/image:tag"))
         self.assertEqual(result.exit_code, 0)
-        self.assertEqual(run.call_args_list[0].args[0][-1], "'[::1]:5000/team/image:tag'")
-        self.assertEqual(run.call_args_list[1].args[0][8], "'[::1]:5000/team/image:tag'")
+        commands = [call.args[0] for call in run.call_args_list]
+        self.assertEqual(commands[0][-1], "'[::1]:5000/team/image:tag'")
+        self.assertEqual(commands[2][11], "'[::1]:5000/team/image:tag'")
 
 
 if __name__ == "__main__":
