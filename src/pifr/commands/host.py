@@ -10,7 +10,7 @@ class HostInfo:
     name: str
     hostname: str | None = None
     user: str | None = None
-    port: int | None = None
+    port: str | None = None
 
 
 def get_ssh_host_info() -> list[HostInfo]:
@@ -37,7 +37,7 @@ def get_ssh_host_info() -> list[HostInfo]:
                 elif host and key == "HostName":
                     host.hostname = value
                 elif host and key == "Port":
-                    host.port = int(value)
+                    host.port = value
                 elif host and key == "User":
                     host.user = value
         if host:
@@ -57,6 +57,6 @@ def rich_print_hosts(hosts: list[HostInfo]):
     table.add_column("User", style="cyan")
     # 添加表格行数据
     for host in hosts:
-        table.add_row(host.name, host.hostname or "", str(host.port or ""), host.user or "")
+        table.add_row(host.name, host.hostname or "", host.port or "", host.user or "")
     # 使用 Console 对象打印表格
     console.print(table)
