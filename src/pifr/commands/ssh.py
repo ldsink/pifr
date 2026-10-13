@@ -1,8 +1,12 @@
+import codecs
+import os
 import re
+import selectors
 import shlex
 import subprocess
 import sys
 import tempfile
+import time
 import uuid
 from pathlib import Path
 
@@ -16,6 +20,11 @@ _TAG = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}\Z")
 _DIGEST = re.compile(r"[A-Za-z][A-Za-z0-9]*(?:[-_+.][A-Za-z][A-Za-z0-9]*)*:[A-Fa-f0-9]{32,}\Z")
 _ALLOWED_CHARACTERS = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._:/@+-[]")
 _SSH_HOST = re.compile(r"(?:[A-Za-z0-9_][A-Za-z0-9_.-]*@)?[A-Za-z0-9_][A-Za-z0-9_.-]*\Z")
+_COMMAND_TIMEOUT = 12 * 60 * 60
+_CLEANUP_TIMEOUT = 60
+_PROGRESS_INTERVAL = 30
+_ERROR_OUTPUT_LIMIT = 64 * 1024
+_SSH_OPTIONS = ["-o", "ConnectTimeout=15", "-o", "ServerAliveInterval=30", "-o", "ServerAliveCountMax=3"]
 
 
 def validate_host(host: str) -> str:
@@ -161,8 +170,16 @@ def _remove_remote_temp_dir(host: str, remote_dir: str, verbose: bool):
 
 
 def _ssh_run(cmd: list[str], success: str, fail: str, verbose: bool = False, *, warn_only: bool = False):
+    timeout = _CLEANUP_TIMEOUT if warn_only else _COMMAND_TIMEOUT
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = _run_command(cmd, verbose, success.removesuffix(" done"), timeout)
+    except subprocess.TimeoutExpired as error:
+        message = f"{fail}: timed out after {error.timeout} seconds"
+        if warn_only:
+            click.echo(click.style(f"Warning: {message}", fg="yellow"), err=True)
+            return
+        click.echo(click.style(message, fg="red"), err=True)
+        sys.exit(124)
     except OSError as error:
         detail = f"Command not found: {cmd[0]}" if isinstance(error, FileNotFoundError) else str(error)
         if warn_only:
@@ -180,8 +197,60 @@ def _ssh_run(cmd: list[str], success: str, fail: str, verbose: bool = False, *, 
             click.echo(click.style(message, fg="yellow"), err=True)
             return
         click.echo(click.style(fail, fg="red"))
-        click.echo(click.style(result.stderr, fg="red"))
+        if result.stderr and not verbose:
+            click.echo(click.style(result.stderr, fg="red"))
         sys.exit(result.returncode)
-    if verbose and result.stdout:
-        click.echo(click.style(result.stdout))
     click.echo(click.style(success, fg="green") + click.style(" ✅\n"))
+
+
+def _run_command(cmd: list[str], verbose: bool, label: str, timeout: float | None = None) -> subprocess.CompletedProcess:
+    timeout = _COMMAND_TIMEOUT if timeout is None else timeout
+    native_progress = cmd[0] == "scp" and sys.stderr.isatty()
+    args = [cmd[0], *_SSH_OPTIONS, *cmd[1:]] if cmd[0] in {"ssh", "scp"} else cmd
+    process = subprocess.Popen(args, stdout=None if native_progress else subprocess.PIPE, stderr=None if native_progress else subprocess.PIPE)
+    error_tail = bytearray()
+    decoders = {name: codecs.getincrementaldecoder("utf-8")("replace") for name in ("stdout", "stderr")}
+    started = time.monotonic()
+    next_progress = started + _PROGRESS_INTERVAL
+    try:
+        with selectors.DefaultSelector() as selector:
+            if process.stdout is not None:
+                selector.register(process.stdout, selectors.EVENT_READ, "stdout")
+            if process.stderr is not None:
+                selector.register(process.stderr, selectors.EVENT_READ, "stderr")
+            while selector.get_map():
+                elapsed = time.monotonic() - started
+                if elapsed >= timeout:
+                    raise subprocess.TimeoutExpired(cmd, timeout)
+                for key, _ in selector.select(timeout=min(1, timeout - elapsed)):
+                    chunk = os.read(key.fileobj.fileno(), 64 * 1024)
+                    name = key.data
+                    if not chunk:
+                        selector.unregister(key.fileobj)
+                        if verbose:
+                            remaining = decoders[name].decode(b"", final=True)
+                            if remaining:
+                                click.echo(remaining, err=name == "stderr", nl=False)
+                        continue
+                    if name == "stderr":
+                        error_tail.extend(chunk)
+                        if len(error_tail) > _ERROR_OUTPUT_LIMIT:
+                            del error_tail[:-_ERROR_OUTPUT_LIMIT]
+                    if verbose:
+                        output = decoders[name].decode(chunk)
+                        if output:
+                            click.echo(output, err=name == "stderr", nl=False)
+                if not native_progress and time.monotonic() >= next_progress:
+                    click.echo(click.style(f"{label}... {int(time.monotonic() - started)}s elapsed", fg="yellow"), err=True)
+                    next_progress = time.monotonic() + _PROGRESS_INTERVAL
+        remaining = max(0, timeout - (time.monotonic() - started))
+        returncode = process.wait(timeout=remaining)
+        return subprocess.CompletedProcess(cmd, returncode, "", error_tail.decode("utf-8", "replace"))
+    finally:
+        if process.poll() is None:
+            process.kill()
+        process.wait()
+        if process.stdout is not None:
+            process.stdout.close()
+        if process.stderr is not None:
+            process.stderr.close()

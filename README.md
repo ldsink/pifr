@@ -47,6 +47,8 @@ Push a local image to a remote host
 
 > pifr push hello-world remote-host
 
+In an interactive terminal, file copying shows the SCP progress meter with percentage, speed, and estimated time remaining. Other long-running steps report elapsed time every 30 seconds. Use `--verbose` with `pull` or `push` to stream command output. Transfer steps have a 12-hour time limit.
+
 Image names may include a registry host and port, a tag, or a digest. Invalid names are rejected before any transfer starts.
 
 This is useful when the local machine acts as an intermediary to transfer images between two hosts that cannot reach each other directly.
